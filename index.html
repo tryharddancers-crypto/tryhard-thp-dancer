@@ -102,10 +102,11 @@
     const SUBMISSION_STORAGE_KEY = 'thp.invoice.pendingSubmission';
     const SUBMISSION_STORAGE_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
     const REQUEST_TIMEOUT_MS = 20000;
+    const SUBMIT_REQUEST_TIMEOUT_MS = 150000;
 
-    async function fetchJson(url, options = {}) {
+    async function fetchJson(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       try {
         const response = await fetch(url, {
           ...options,
@@ -461,7 +462,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify(payload)
-        });
+        }, SUBMIT_REQUEST_TIMEOUT_MS);
         if (!json.ok) throw new Error(json.error || '送信に失敗しました');
         clearPendingSubmission();
         msg.textContent = `✅ ${json.count}件を送信しました（${json.date}）`;
